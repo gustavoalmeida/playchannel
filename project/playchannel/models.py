@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db import models
+from playchannel.managers import MovieManager
 
 class Author(models.Model):
     first_name = models.CharField(verbose_name=u"Nome", max_length=50)
@@ -33,7 +34,9 @@ class Movie(models.Model):
     title = models.CharField(verbose_name=u"Título", max_length=100)
     synopsis = models.TextField(verbose_name=u"Sinópse")
     authors = models.ManyToManyField(Author, verbose_name=u"Autores")
-    genre = models.ManyToManyField(Genre, verbose_name=u"Gênero")
+    genres = models.ManyToManyField(Genre, verbose_name=u"Gênero")
+
+    objects = MovieManager()
 
     def __unicode__(self):
         return self.title
