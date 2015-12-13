@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import os
+import uuid
 from django.db import models
 from django.db.models import Count, Q
 from playchannel.managers import MovieManager
@@ -30,13 +32,18 @@ class Genre(models.Model):
         verbose_name_plural = u"Gêneros"
 
 
+def cover_upload(instance, filename):
+    ext = filename.split('.')[-1]
+    filename = "%s.%s" % (uuid.uuid4(), ext)
+    return os.path.join('movie/cover', filename)
+
 class Movie(models.Model):
 
     title = models.CharField(verbose_name=u"Título", max_length=100)
     synopsis = models.TextField(verbose_name=u"Sinópse")
     authors = models.ManyToManyField(Author, verbose_name=u"Autores")
     genres = models.ManyToManyField(Genre, verbose_name=u"Gênero")
-
+    cover = models.ImageField(verbose_name=u"capa", upload_to=cover_upload)
     objects = MovieManager()
 
     def __unicode__(self):

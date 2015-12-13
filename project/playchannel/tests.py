@@ -1,4 +1,8 @@
+import os
 from model_mommy import mommy
+from django.core.urlresolvers import reverse
+from django.core.files.base import File
+
 from django.test import TestCase
 from playchannel.models import Movie, Genre, Author
 
@@ -8,7 +12,16 @@ class TestMovie(TestCase):
         self.genres = mommy.make(Genre, _quantity=3)
         self.authors = mommy.make(Author, _quantity=3)
         self.movies = mommy.make(Movie, genres=self.genres,
-                                authors=self.authors, _quantity=20)
+                                authors=self.authors,
+                                _quantity=20)
+
+    def test_cover_field(self):
+        movie = mommy.make(Movie)
+        movie.cover = File(open(os.path.join(os.path.dirname(__file__),"data","cover.png")))
+        movie.save()
+        p = Movie.objects.get(id=movie.id).cover.path
+        self.failUnless(open(p), 'file not found')
+
 
     def test_movie_order_asc(self):
         movies_asc = Movie.objects.all().order_by('title')
@@ -43,3 +56,7 @@ class TestMovie(TestCase):
         self.assertEqual(related[0].title, third_movie.title)
         self.assertEqual(len(related), 2)
         self.assertEqual(related[1].title, second_movie.title)
+
+    def test_view_home(self):
+        resp = self.client.get(reverse('home'))
+        self.assertEqual(resp.status_code, 200)
