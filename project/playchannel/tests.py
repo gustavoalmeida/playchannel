@@ -23,3 +23,8 @@ class TestMovie(TestCase):
         for i in [1,5,10,15,20]:
             self.assertEqual(movies_desc[i-1].title, movies_desc_manager[i-1].title)
             self.assertEqual(movies_desc[i-1].title, movies_desc_manager[i-1].title)
+
+    def related_movies(self):
+        sample_movie = self.movie.first()
+        related = sample_movie.get_relateds()
+        self.assertEqual(related.count(), 19)
