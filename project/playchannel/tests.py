@@ -7,7 +7,7 @@ class TestMovie(TestCase):
     def setUp(self):
         self.genres = mommy.make(Genre, _quantity=3)
         self.authors = mommy.make(Author, _quantity=3)
-        self.movie = mommy.make(Movie, genres=self.genres,
+        self.movies = mommy.make(Movie, genres=self.genres,
                                 authors=self.authors, _quantity=20)
 
     def test_movie_order_asc(self):
@@ -24,7 +24,22 @@ class TestMovie(TestCase):
             self.assertEqual(movies_desc[i-1].title, movies_desc_manager[i-1].title)
             self.assertEqual(movies_desc[i-1].title, movies_desc_manager[i-1].title)
 
-    def related_movies(self):
-        sample_movie = self.movie.first()
+    def test_related_movies(self):
+        sample_movie = self.movies[0]
         related = sample_movie.get_relateds()
         self.assertEqual(related.count(), 19)
+        for m in self.movies:
+            m.delete()
+        first_movie = mommy.make(Movie,
+                                 authors=[self.authors[0]],
+                                 genres=[self.genres[0]]
+                                 )
+        second_movie = mommy.make(Movie,
+                                  genres=[self.genres[0]])
+        third_movie = mommy.make(Movie,
+                                 authors=[self.authors[0]],
+                                 genres=[self.genres[0]])
+        related = first_movie.get_relateds()
+        self.assertEqual(related[0].title, third_movie.title)
+        self.assertEqual(len(related), 2)
+        self.assertEqual(related[1].title, second_movie.title)

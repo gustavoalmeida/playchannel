@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db import models
-from django.db.models.sql.aggregates import Count
+from django.db.models import Count, Q
 from playchannel.managers import MovieManager
 
 class Author(models.Model):
@@ -42,17 +42,17 @@ class Movie(models.Model):
     def __unicode__(self):
         return self.title
 
-    def get_related(self):
-        target_geners = self.genres
-        target_authors = self.authors
-        related = self.objects.annotate(
-            count_geners=Count('geners'),
-            count_authors=Count('authors')
+    def get_relateds(self):
+        target_genres = self.genres.all()
+        target_authors = self.authors.all()
+        related = Movie.objects.annotate(
+            count_genres=Count('genres'),
+            count_authors=Count('authors'),
         ).filter(
-            geners=target_geners,
-            authos=target_authors
-        ).order_by('count_geners', 'count_authors')
-        return related
+            Q(genres__id__in=[g.id for g in target_genres]) |
+            Q(authors__id__in=[g.id for g in target_authors])
+        ).order_by('-count_genres', '-count_authors')
+        return related.exclude(id=self.pk)
 
     class Meta:
         verbose_name = u"Filme"
