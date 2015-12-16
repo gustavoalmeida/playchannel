@@ -4,15 +4,15 @@ from django.core.urlresolvers import reverse
 from django.core.files.base import File
 
 from django.test import TestCase
-from playchannel.models import Movie, Genre, Author
+from playchannel.models import Movie, Genre, Actor
 
 class TestMovie(TestCase):
 
     def setUp(self):
         self.genres = mommy.make(Genre, _quantity=3)
-        self.authors = mommy.make(Author, _quantity=3)
+        self.actors = mommy.make(Actor, _quantity=3)
         self.movies = mommy.make(Movie, genres=self.genres,
-                                authors=self.authors,
+                                authors=self.actors,
                                 _quantity=20)
 
     def test_cover_field(self):
@@ -44,13 +44,13 @@ class TestMovie(TestCase):
         for m in self.movies:
             m.delete()
         first_movie = mommy.make(Movie,
-                                 authors=[self.authors[0]],
+                                 authors=[self.actors[0]],
                                  genres=[self.genres[0]]
                                  )
         second_movie = mommy.make(Movie,
                                   genres=[self.genres[0]])
         third_movie = mommy.make(Movie,
-                                 authors=[self.authors[0]],
+                                 authors=[self.actors[0]],
                                  genres=[self.genres[0]])
         related = first_movie.get_relateds()
         self.assertEqual(related[0].title, third_movie.title)
@@ -60,3 +60,9 @@ class TestMovie(TestCase):
     def test_view_home(self):
         resp = self.client.get(reverse('home'))
         self.assertEqual(resp.status_code, 200)
+
+    def test_view_geners_list(self):
+        pass
+
+    def test_view_actors_list(self):
+        pass

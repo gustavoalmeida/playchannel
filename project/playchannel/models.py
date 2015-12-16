@@ -5,7 +5,7 @@ from django.db import models
 from django.db.models import Count, Q
 from playchannel.managers import MovieManager
 
-class Author(models.Model):
+class Actor(models.Model):
     first_name = models.CharField(verbose_name=u"Nome", max_length=50)
     last_name = models.CharField(verbose_name=u"Sobrenome", max_length=50)
 
@@ -16,8 +16,8 @@ class Author(models.Model):
         )
 
     class Meta:
-        verbose_name = u"Autor"
-        verbose_name_plural = u"Autores"
+        verbose_name = u"Ator"
+        verbose_name_plural = u"Atores"
 
 
 class Genre(models.Model):
@@ -41,7 +41,7 @@ class Movie(models.Model):
 
     title = models.CharField(verbose_name=u"Título", max_length=100)
     synopsis = models.TextField(verbose_name=u"Sinópse")
-    authors = models.ManyToManyField(Author, verbose_name=u"Autores")
+    actors = models.ManyToManyField(Actor, verbose_name=u"Atores")
     genres = models.ManyToManyField(Genre, verbose_name=u"Gênero")
     cover = models.ImageField(verbose_name=u"capa", upload_to=cover_upload)
     objects = MovieManager()
@@ -51,14 +51,14 @@ class Movie(models.Model):
 
     def get_relateds(self):
         target_genres = self.genres.all()
-        target_authors = self.authors.all()
+        target_actors = self.actors.all()
         related = Movie.objects.annotate(
             count_genres=Count('genres'),
-            count_authors=Count('authors'),
+            count_actors=Count('actors'),
         ).filter(
             Q(genres__id__in=[g.id for g in target_genres]) |
-            Q(authors__id__in=[g.id for g in target_authors])
-        ).order_by('-count_genres', '-count_authors')
+            Q(actors__id__in=[g.id for g in target_actors])
+        ).order_by('-count_genres', '-count_actors')
         return related.exclude(id=self.pk)
 
     class Meta:
