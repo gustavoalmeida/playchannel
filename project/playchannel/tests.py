@@ -12,15 +12,18 @@ class TestMovie(TestCase):
         self.genres = mommy.make(Genre, _quantity=3)
         self.actors = mommy.make(Actor, _quantity=3)
         self.movies = mommy.make(Movie, genres=self.genres,
-                                authors=self.actors,
-                                _quantity=20)
+                                actors=self.actors,
+                                _quantity=20,
+                                 cover=File(open(os.path.join(
+                                     os.path.dirname(__file__),"data","cover.png")
+                                 )))
 
-    def test_cover_field(self):
-        movie = mommy.make(Movie)
-        movie.cover = File(open(os.path.join(os.path.dirname(__file__),"data","cover.png")))
-        movie.save()
-        p = Movie.objects.get(id=movie.id).cover.path
-        self.failUnless(open(p), 'file not found')
+    # def test_cover_field(self):
+    #     movie = mommy.make(Movie)
+    #     movie.cover = File(open(os.path.join(os.path.dirname(__file__),"data","cover.png")))
+    #     movie.save()
+    #     p = Movie.objects.get(id=movie.id).cover.path
+    #     self.failUnless(open(p), 'file not found')
 
 
     def test_movie_order_asc(self):
@@ -44,13 +47,13 @@ class TestMovie(TestCase):
         for m in self.movies:
             m.delete()
         first_movie = mommy.make(Movie,
-                                 authors=[self.actors[0]],
+                                 actors=[self.actors[0]],
                                  genres=[self.genres[0]]
                                  )
         second_movie = mommy.make(Movie,
                                   genres=[self.genres[0]])
         third_movie = mommy.make(Movie,
-                                 authors=[self.actors[0]],
+                                 actors=[self.actors[0]],
                                  genres=[self.genres[0]])
         related = first_movie.get_relateds()
         self.assertEqual(related[0].title, third_movie.title)
@@ -61,8 +64,35 @@ class TestMovie(TestCase):
         resp = self.client.get(reverse('home'))
         self.assertEqual(resp.status_code, 200)
 
-    def test_view_geners_list(self):
-        pass
+    def test_view_genres_list(self):
+        resp = self.client.get(reverse('genre-list'))
+        self.assertEqual(resp.status_code, 200)
 
     def test_view_actors_list(self):
-        pass
+        resp = self.client.get(reverse('actor-list'))
+        self.assertEqual(resp.status_code, 200)
+
+    def test_view_movie_list(self):
+        resp = self.client.get(reverse('movie-list'))
+        self.assertEqual(resp.status_code, 200)
+
+    def test_view_genres_detail(self):
+        resp = self.client.get(reverse('genre-detail', args=(self.genres[0].slug,)))
+        self.assertEqual(resp.status_code, 200)
+
+    def test_view_actors_detail(self):
+        resp = self.client.get(reverse('actor-detail', args=(self.actors[0].slug,)))
+        self.assertEqual(resp.status_code, 200)
+
+    def test_view_movie_detail(self):
+        resp = self.client.get(reverse('movie-detail', args=(self.movies[0].slug,)))
+        self.assertEqual(resp.status_code, 200)
+
+    def tearDown(self):
+        for movie in self.movies:
+            if movie.id:
+                movie.delete(include_images=True)
+        for genre in self.genres:
+            genre.delete()
+        for actor in self.actors:
+            actor.delete()
